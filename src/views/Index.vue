@@ -32,7 +32,7 @@
         <el-button
           type="primary"
           @click="submitInfo"
-          :disabled="isDisabled"
+          :loading="isLoading"
         >
           提交学生信息
         </el-button>
@@ -56,7 +56,7 @@ export default defineComponent({
       username: '',
       password: ''
     })
-    const isDisabled = ref(false)
+    const isLoading = ref(false)
 
     const showNotification = (): void => {
       ElNotification({
@@ -65,6 +65,8 @@ export default defineComponent({
         message: '本系统仅供个人学习，不承担任何风险和责任。'
       })
     }
+
+    const throttle = ref(false)
 
     const submitInfo = async (): Promise<void> => {
       const validate = (): boolean => {
@@ -80,13 +82,24 @@ export default defineComponent({
             message: '请输入正确的账号'
           })
           return false
+        } else if (throttle.value) {
+          ElMessage.warning({
+            type: 'warning',
+            message: '请勿提交太快'
+          })
+
+          return false
         }
 
         return true
       }
 
       if (validate()) {
-        isDisabled.value = true
+        isLoading.value = true
+        throttle.value = true
+        setTimeout(() => {
+          throttle.value = false
+        }, 3000)
         try {
           const res = await request.post('register', {
             'username': user.username,
@@ -103,7 +116,7 @@ export default defineComponent({
             message: '服务器正在维护，请稍后重试'
           })
         } finally {
-          isDisabled.value = false
+          isLoading.value = false
         }
 
       }
@@ -111,7 +124,7 @@ export default defineComponent({
 
     return {
       ...toRefs(user),
-      isDisabled,
+      isLoading,
       submitInfo
     }
   }
