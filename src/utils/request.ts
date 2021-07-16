@@ -1,7 +1,7 @@
 import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 
 const options: AxiosRequestConfig = {
-  baseURL: 'http://www.lmmmmmm.cn:4001/api',
+  baseURL: 'http://www.YourDomain.cn/api',
   timeout: 3000
 }
 

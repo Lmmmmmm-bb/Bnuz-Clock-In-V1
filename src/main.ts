@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { components, plugins } from './plugins/element'
+import './registerServiceWorker'
 
 const app = createApp(App)
 

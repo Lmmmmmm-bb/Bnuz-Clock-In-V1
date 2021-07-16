@@ -109,7 +109,6 @@ export default defineComponent({
             type: 'success',
             message: '提交成功'
           })
-          console.log(res)
         } catch(err) {
           ElMessage.error({
             type: 'error',
