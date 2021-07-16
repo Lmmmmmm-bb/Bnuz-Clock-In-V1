@@ -9,7 +9,7 @@
       <div class="input username">
         <span>学生账号</span>
         <el-input
-          v-model="username"
+          v-model.trim="username"
           placeholder="在这里输入账号"
           prefix-icon="el-icon-user"
           :maxlength="10"
@@ -20,24 +20,33 @@
       <div class="input userpwd">
         <span>学生密码</span>
         <el-input
+          type="password"
           prefix-icon="el-icon-lock"
-          v-model="password"
+          v-model.trim="password"
           placeholder="在这里输入密码"
           :maxlength="16"
+          show-password
         />
       </div>
       <div class="container-submit">
-        <el-button type="primary">提交学生信息</el-button>
+        <el-button
+          type="primary"
+          @click="submitInfo"
+          :disabled="isDisabled"
+        >
+          提交学生信息
+        </el-button>
       </div>
     </el-card>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted } from 'vue'
-import { ElNotification } from 'element-plus'
+import { defineComponent, reactive, toRefs, onMounted, ref } from 'vue'
+import { ElNotification, ElMessage } from 'element-plus'
 import { User } from '../models/User'
 import request from '../utils/request'
+import crypto from '../utils/crypto'
 
 export default defineComponent({
   setup() {
@@ -47,17 +56,63 @@ export default defineComponent({
       username: '',
       password: ''
     })
+    const isDisabled = ref(false)
 
     const showNotification = (): void => {
       ElNotification({
         type: 'warning',
         title: '警告',
-        message: '本系统仅供个人学习，本人不承担任何责任。'
+        message: '本系统仅供个人学习，不承担任何风险和责任。'
       })
     }
 
+    const submitInfo = async (): Promise<void> => {
+      const validate = (): boolean => {
+        if (user.username.trim().length === 0 || user.password.trim().length === 0) {
+          ElMessage.warning({
+            type: 'warning',
+            message: '账号或密码不能为空'
+          })
+          return false
+        } else if (!/\d{10}/.test(user.username)) {
+          ElMessage.warning({
+            type: 'warning',
+            message: '请输入正确的账号'
+          })
+          return false
+        }
+
+        return true
+      }
+
+      if (validate()) {
+        isDisabled.value = true
+        try {
+          const res = await request.post('register', {
+            'username': user.username,
+            'encryptPwd': crypto.encrypt(user.password)
+          })
+          ElMessage.success({
+            type: 'success',
+            message: '提交成功'
+          })
+          console.log(res)
+        } catch(err) {
+          ElMessage.error({
+            type: 'error',
+            message: '服务器正在维护，请稍后重试'
+          })
+        } finally {
+          isDisabled.value = false
+        }
+
+      }
+    }
+
     return {
-      ...toRefs(user)
+      ...toRefs(user),
+      isDisabled,
+      submitInfo
     }
   }
 })
