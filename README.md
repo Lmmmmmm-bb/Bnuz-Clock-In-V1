@@ -1,24 +1,23 @@
 # bnuz-automatic-frontend
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
+***This application is for learning and reference only, the developer does not bear any risks and responsibilities.***
+## Install Dependencies
+```bash
+$ npm install
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
+## Compiles For Development
+```bash
+$ npm run serve
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Compiles For Production
+```bash
+$ npm run build
+```
+
+## PWA
+If you want to test PWA you must be in the **production mode** and **run on the server** instead of a local file.
+```bash
+$ npm run build
+```
