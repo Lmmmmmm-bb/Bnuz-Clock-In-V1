@@ -1,9 +1,9 @@
-import Crypto from 'crypto-js'
+const Crypto = require('crypto-js')
 
 const key = Crypto.enc.Utf8.parse('Your key')
 const iv = Crypto.enc.Utf8.parse('Your iv')
 
-const encrypt = (word: string): string => {
+const encrypt = word => {
     const srcs = Crypto.enc.Utf8.parse(word)
     const encrypted = Crypto.AES.encrypt(srcs, key, {
         iv,
@@ -14,7 +14,7 @@ const encrypt = (word: string): string => {
     return encrypted.ciphertext.toString()
 }
 
-const decrypt = (word: string): string => {
+const decrypt = word => {
     const encryptedHexStr = Crypto.enc.Hex.parse(word);
     const srcs = Crypto.enc.Base64.stringify(encryptedHexStr);
     const decrypt = Crypto.AES.decrypt(srcs, key, {
@@ -26,7 +26,7 @@ const decrypt = (word: string): string => {
     return decryptedRes.toString();
 }
 
-export default {
+module.exports = {
     encrypt,
     decrypt
 }
