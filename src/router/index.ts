@@ -3,7 +3,11 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    component: () => import('../views/Index.vue')
+    component: () => import(/* webpackChunkName: "default" */ '../views/Index.vue')
+  },
+  {
+    path: '/mobile',
+    component: () => import(/* webpackChunkName: "mobile" */ '../views/Mobile.vue')
   }
 ]
 

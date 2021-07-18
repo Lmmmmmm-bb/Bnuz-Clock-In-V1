@@ -1,91 +1,88 @@
 <template>
   <div class="container">
-    <el-card :body-style="{ padding: '20px 100px' }">
-      <template #header>
+    <van-cell-group inset>
+      <van-cell>
         <div class="container-title">
           <div>每日打卡</div>
         </div>
-      </template>
-      <div class="input username">
-        <span>学生账号</span>
-        <el-input
+      </van-cell>
+      <van-cell>
+        <van-field
           v-model.trim="username"
-          placeholder="在这里输入账号"
-          prefix-icon="el-icon-user"
-          :maxlength="10"
+          type="digit"
+          label="学生账号"
+          maxlength="10"
           show-word-limit
-          autofocus
         />
-      </div>
-      <div class="input userpwd">
-        <span>学生密码</span>
-        <el-input
-          type="password"
-          prefix-icon="el-icon-lock"
+      </van-cell>
+      <van-cell>
+        <van-field
           v-model.trim="password"
-          placeholder="在这里输入密码"
-          :maxlength="16"
-          show-password
+          type="password"
+          label="学生密码"
+          maxlength="16"
         />
-      </div>
+      </van-cell>
       <div class="container-submit">
-        <el-button
+        <van-button
           type="primary"
           @click="submitInfo"
-          :loading="isLoading"
         >
           提交学生信息
-        </el-button>
+        </van-button>
       </div>
-    </el-card>
+    </van-cell-group>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted, ref } from 'vue'
-import { ElNotification, ElMessage } from 'element-plus'
-import { User } from '../models/User'
-import request from '../utils/request'
-import crypto from '../utils/crypto'
+import { defineComponent, ref, reactive, toRefs, onMounted } from 'vue'
+import { Notify, Toast } from 'vant'
+import 'vant/es/notify/style'
 import isMobile from '../utils/agent'
+import { User } from '../models/User'
+import crypto from '../utils/crypto'
+import request from '../utils/request'
 
 export default defineComponent({
-  name: 'Index',
+  name: 'Mobile',
+  beforeRouteEnter(to, from, next) {
+    if (!isMobile(navigator.userAgent)) {
+      next('/')
+    }
+    next()
+  },
   setup() {
-    onMounted(() => { showNotification() })
+    onMounted(() => {
+      Notify({
+        type: 'warning',
+        message: '本系统仅供个人学习，不承担任何风险和责任。'
+      })
+    })
 
     const user = reactive<User>({
       username: '',
       password: ''
     })
-    const isLoading = ref(false)
-
-    const showNotification = (): void => {
-      ElNotification({
-        type: 'warning',
-        title: '警告',
-        message: '本系统仅供个人学习，不承担任何风险和责任。'
-      })
-    }
 
     const throttle = ref(false)
 
-    const submitInfo = async (): Promise<void> => {
+    const submitInfo = async () => {
       const validate = (): boolean => {
         if (user.username.trim().length === 0 || user.password.trim().length === 0) {
-          ElMessage.warning({
+          Notify({
             type: 'warning',
             message: '账号或密码不能为空'
           })
           return false
         } else if (!/\d{10}/.test(user.username)) {
-          ElMessage.warning({
+          Notify({
             type: 'warning',
             message: '请输入正确的账号'
           })
           return false
         } else if (throttle.value) {
-          ElMessage.warning({
+          Notify({
             type: 'warning',
             message: '请勿提交太快'
           })
@@ -97,45 +94,34 @@ export default defineComponent({
       }
 
       if (validate()) {
-        isLoading.value = true
         throttle.value = true
         setTimeout(() => {
           throttle.value = false
         }, 3000)
+        const toast = Toast.loading({
+          message: '提交信息中...',
+          forbidClick: true
+        })
         try {
           await request.post('register', {
             'username': user.username,
             'encryptPwd': crypto.encrypt(user.password)
           })
-          ElMessage.success({
-            type: 'success',
-            message: '提交成功'
-          })
+          Toast.success('提交成功')
           user.username = ''
           user.password = ''
         } catch(err) {
-          ElMessage.error({
-            type: 'error',
-            message: '服务器正在维护，请稍后重试'
-          })
+          Toast.fail('服务器正在维护，请稍后重试')
         } finally {
-          isLoading.value = false
+          toast.clear()
         }
-
       }
     }
 
     return {
       ...toRefs(user),
-      isLoading,
       submitInfo
     }
-  },
-  beforeRouteEnter(to, from, next) {
-    if (isMobile(navigator.userAgent)) {
-      next('/mobile')
-    }
-    next()
   }
 })
 
@@ -149,7 +135,6 @@ export default defineComponent({
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-width: 800px;
   background-image: linear-gradient( 135deg, #ABDCFF 10%, #3badff 100%);
 }
 
@@ -157,23 +142,11 @@ export default defineComponent({
   padding: 10px 0;
   text-align: center;
   font-weight: 500;
-  font-size: 26px;
-}
-
-.container .input {
-  padding: 20px 0;
-  display: flex;
-  align-items: center;
-  min-width: 300px;
-  max-width: 800px;
-}
-
-.container .input span {
-  width: 120px;
+  font-size: 22px;
 }
 
 .container .container-submit {
+  margin: 20px 0;
   text-align: center;
-  margin: 26px 0;
 }
 </style>
